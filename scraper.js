@@ -24,8 +24,8 @@ scrape = async (url) => {
 }
 
 async function getLinks() {
-  for (let i = 1; i < 50; i++) {
-    const url = 'https://www.allrecipes.com/recipes/1232/healthy-recipes/low-calorie/?page=' + i
+  for (let i = 1; i < 30; i++) {
+    const url = 'https://www.allrecipes.com/recipes/87/everyday-cooking/vegetarian/?page=' + i
     await scrape(url)
   }
 }
@@ -45,7 +45,7 @@ async function scrapeRecipe () {
         for (let i = 0; i < ingredientsElements.length - 1; i++) {
           ingredients.push(ingredientsElements[i].innerText)
         }
-        return {ingredients}
+        return ingredients
       })
       const steps = await page.evaluate(() => {
         const stepsElements = document.getElementsByClassName('recipe-directions__list--item')
@@ -53,7 +53,7 @@ async function scrapeRecipe () {
         for (let i = 0; i < stepsElements.length - 1; i++) {
           steps.push(stepsElements[i].innerText)
         }
-        return {steps}
+        return steps
       })
       const title = await page.title()
       const newRecipe = {
@@ -61,7 +61,7 @@ async function scrapeRecipe () {
         link,
         ingredients,
         steps,
-        class: ['low-calorie']
+        class: ['vegetarian']
       }
       recipes.push(newRecipe)
       console.log('Added new recipe', newRecipe)
@@ -72,7 +72,7 @@ async function scrapeRecipe () {
 
 async function writeData () {
   await scrapeRecipe()
-  fs.writeFile('low-calorie-recipes-full.json', JSON.stringify({recipes}), () => {
+  fs.writeFile('vegetarian-recipes-big.json', JSON.stringify({recipes}), () => {
     process.exit(0)
   })
 }
