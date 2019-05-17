@@ -4,8 +4,8 @@ const fs = require('fs')
 let recipeLinks = []
 
 scrape = async (url) => {
+  const browser = await puppeteer.launch({headless: false});
   try {
-    const browser = await puppeteer.launch();
     const page = await browser.newPage();
     await page.goto(url);
     const tempLinks = await page.evaluate(() => {
@@ -17,26 +17,28 @@ scrape = async (url) => {
       return recipeLinks.filter(link => link)
     })
     recipeLinks = [...recipeLinks, ...tempLinks]
-    browser.close()
-  } catch (e) {
+  }
+  catch (e) {
+    console.log(e)
     console.log('An error happened! Aborting...')
   }
+  browser.close()
 }
 
 async function getLinks() {
-  for (let i = 1; i < 30; i++) {
-    const url = 'https://www.allrecipes.com/recipes/87/everyday-cooking/vegetarian/?page=' + i
+  for (let i = 1; i < 2; i++) {
+    const url = 'https://www.allrecipes.com/?page=' + i
     await scrape(url)
   }
 }
 
 const recipes = []
 
-async function scrapeRecipe () {
+async function scrapeRecipe() {
   await getLinks()
   for (const link of recipeLinks) {
+    const browser = await puppeteer.launch({headless: false});
     try {
-      const browser = await puppeteer.launch();
       const page = await browser.newPage();
       await page.goto(link);
       const ingredients = await page.evaluate(() => {
@@ -57,22 +59,25 @@ async function scrapeRecipe () {
       })
       const title = await page.title()
       const newRecipe = {
-        title: title.replace(/ Recipe - Allrecipes.com/g,''),
+        title: title.replace(/ Recipe - Allrecipes.com/g, ''),
         link,
         ingredients,
         steps,
-        class: ['vegetarian']
+        class: ['vegan']
       }
       recipes.push(newRecipe)
       console.log('Added new recipe', newRecipe)
-      browser.close()
-    } catch (e) { console.log('Error happened! Skipping...')}
+    }
+    catch (e) {
+      console.log('Error happened! Skipping...')
+    }
+    browser.close()
   }
 }
 
-async function writeData () {
+async function writeData() {
   await scrapeRecipe()
-  fs.writeFile('vegetarian-recipes-big.json', JSON.stringify({recipes}), () => {
+  fs.writeFile('vegan-recipes-test.json', JSON.stringify({ recipes }), () => {
     process.exit(0)
   })
 }
